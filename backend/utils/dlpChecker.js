@@ -2,6 +2,8 @@ const fs = require('fs');
 const config = require('../config/config');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const path = require('path');
+const embeddingFilePath = path.join(__dirname, '..', 'recipeEmbeddings.json');
 
 function cosineSimilarity(vecA, vecB) {
     let dotProduct = 0.0, normA = 0.0, normB = 0.0;
@@ -18,8 +20,8 @@ exports.hasLeak = async (message, threshold = null) => {
     const actualThreshold = threshold !== null ? threshold : config.security.dlp.threshold;
     try {
         // Load recipe embeddings from JSON file
-        const recipeEmbeddings = JSON.parse(fs.readFileSync('recipeEmbeddings.json', 'utf8'));
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const recipeEmbeddings = JSON.parse(fs.readFileSync(embeddingFilePath, 'utf8'));
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
         // Get embedding for the incoming message
         const result = await model.embedContent(message);

@@ -2,9 +2,10 @@ const Recipe = require('../models/Recipe');
 const dotenv = require('dotenv');
 dotenv.config();
 const fs = require('fs');
+const path = require('path');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const embeddingFilePath = 'recipeEmbeddings.json';
+const embeddingFilePath = path.join(__dirname, '..', 'recipeEmbeddings.json');
 
 exports.createRecipeEmbeddings = async () => {
     if (fs.existsSync(embeddingFilePath)) {
@@ -13,8 +14,11 @@ exports.createRecipeEmbeddings = async () => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
         const secretRecipes = await Recipe.find({}, 'name ingredients').lean();
+        if (secretRecipes.length > 0) {
+            console.log('First secret recipe:', secretRecipes[0]);
+        }
         const recipeEmbeddings = [];
 
         for (const recipe of secretRecipes) {

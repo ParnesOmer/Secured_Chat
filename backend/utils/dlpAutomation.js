@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const embeddingFilePath = path.join(__dirname, '..', 'recipeEmbeddings.json');
 
 // Build a normalized set of sensitive terms from recipeEmbeddings.json and static list
 let sensitiveTerms = null;
@@ -92,12 +94,12 @@ function ensureSensitiveTermsLoaded() {
         '.env', 'dotenv', 'pem', 'vault', 'secrets',
 
         // Domain-specific (recipes)
-        'recipe', 'ingredients', 'formula', 'gorgonzola', 'mozzarella', 'parmesan', 'tomato', 'sauce', 'dough',
+        //'recipe', 'ingredients', 'formula', 'gorgonzola', 'mozzarella', 'parmesan', 'tomato', 'sauce', 'dough',
     ].forEach(t => set.add(normalizeToken(t)));
 
     // From recipeEmbeddings.json → include recipe names and ingredient tokens
     try {
-        const raw = fs.readFileSync('recipeEmbeddings.json', 'utf8');
+        const raw = fs.readFileSync(embeddingFilePath, 'utf8');
         const items = JSON.parse(raw);
         for (const it of items) {
             if (it?.name) tokenize(it.name).forEach(tok => set.add(tok));
