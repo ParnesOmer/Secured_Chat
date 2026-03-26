@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const embeddingFilePath = path.join(__dirname, '..', 'recipeEmbeddings.json');
 
 // Build a normalized set of sensitive terms from recipeEmbeddings.json and static list
 let sensitiveTerms = null;
@@ -92,12 +94,12 @@ function ensureSensitiveTermsLoaded() {
         '.env', 'dotenv', 'pem', 'vault', 'secrets',
 
         // Domain-specific (recipes)
-        'recipe', 'ingredients', 'formula', 'gorgonzola', 'mozzarella', 'parmesan', 'tomato', 'sauce', 'dough',
+        //'recipe', 'ingredients', 'formula', 'gorgonzola', 'mozzarella', 'parmesan', 'tomato', 'sauce', 'dough',
     ].forEach(t => set.add(normalizeToken(t)));
 
     // From recipeEmbeddings.json → include recipe names and ingredient tokens
     try {
-        const raw = fs.readFileSync('recipeEmbeddings.json', 'utf8');
+        const raw = fs.readFileSync(embeddingFilePath, 'utf8');
         const items = JSON.parse(raw);
         for (const it of items) {
             if (it?.name) tokenize(it.name).forEach(tok => set.add(tok));
@@ -148,7 +150,7 @@ function prefilterMessage(message, matchesThreshold = 1) {
 
     // Strict allow: only if all meaningful tokens are in the good whitelist and no sensitive matches
     const allGood = significant.length > 0 && significant.every(t => goods.has(t));
-    if (allGood && matches.length === 0) return { action: 'allow', matches };
+    if ((allGood && matches.length === 0) || significant.length === 0) return { action: 'allow', matches };
 
     if (matches.length >= matchesThreshold) return { action: 'block', matches };
 
@@ -157,5 +159,4 @@ function prefilterMessage(message, matchesThreshold = 1) {
 }
 
 module.exports = { prefilterMessage, ensureSensitiveTermsLoaded };
-
 
